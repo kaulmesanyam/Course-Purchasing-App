@@ -105,7 +105,7 @@ app.post('/users/signup', (req, res) => {
         let user = {
              'username' : userBody.username,
             'password': userBody.password,
-            'purchasedCourses': []
+            'purchased': []
         }
         USERS.push(user);
         res.json({message: "User created successfully"});
@@ -128,11 +128,28 @@ app.get('/users/courses', userAuth, (req, res) => {
 });
 
 app.post('/users/courses/:courseId', userAuth, (req, res) => {
-  // logic to purchase a course
+    let id = parseInt(req.params.courseId);
+
+    const course = COURSES.find((course) => course.id === id);
+    req.user.purchased.push(course.id);
+    res.json({
+        purchasedCourse: id,
+        message: "Course is purchased successfully"
+    })
 });
 
 app.get('/users/purchasedCourses', userAuth, (req, res) => {
-  // logic to view purchased courses
+    let coursesPurchased = [];
+    const coursesPurchasedIds = req.user.purchased;
+    for(let i = 0; i < coursesPurchasedIds.length; i++) {
+        let course = COURSES.find((course) => course.id === coursesPurchasedIds[i]);
+        coursesPurchased.push(course);
+    }
+
+    res.json({
+        'Purchased Courses': coursesPurchased
+    })
+
 });
 
 app.listen(3000, () => {
