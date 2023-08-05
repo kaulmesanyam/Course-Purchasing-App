@@ -20,9 +20,10 @@ const adminAuth = (req, res, next) => {
 
 const userAuth = (req, res, next) => {
     const {username, password} = req.headers;
-    const userIsValid = USERS.find(a => (a.username === username && a.password === password));
+    const user = USERS.find(a => (a.username === username && a.password === password));
 
-    if(userIsValid) {
+    if(user) {
+        req.user = user;
         next();
     } else {
         res.status(403).json({message: "User authentication failure"});
@@ -97,9 +98,15 @@ app.post('/users/signup', (req, res) => {
     if(existingUser) {
         res.status(403).json({message: "User already exists"});
     } else {
-        USERS.push(userBody);
+        let user = {
+             'username' : userBody.username,
+            'password': userBody.password,
+            'purchasedCourses': []
+        }
+        USERS.push(user);
         res.json({message: "User created successfully"});
     }
+    console.log(USERS);
 });
 
 app.post('/users/login', userAuth, (req, res) => {
@@ -109,9 +116,7 @@ app.post('/users/login', userAuth, (req, res) => {
 });
 
 app.get('/users/courses', userAuth, (req, res) => {
-  res.json({
-    Users: COURSES
-  })
+  
 });
 
 app.post('/users/courses/:courseId', userAuth, (req, res) => {
