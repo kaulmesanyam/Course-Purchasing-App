@@ -7,6 +7,17 @@ let ADMINS = [];
 let USERS = [];
 let COURSES = [];
 
+const adminAuth = (req, res, next) => {
+    const {username, password} = req.headers;
+    const adminIsValid = ADMINS.find(a => (a.username === username && a.password === password));
+
+    if(adminIsValid) {
+        next();
+    } else {
+        res.status(403).json({message: "Admin authentication failure"});
+    }
+}
+
 // Admin routes
 app.post('/admin/signup', (req, res) => {
     let adminBody = req.body;
@@ -19,20 +30,52 @@ app.post('/admin/signup', (req, res) => {
     }
 });
 
-app.post('/admin/login', (req, res) => {
-  // logic to log in admin
+app.post('/admin/login', adminAuth, (req, res) => {
+  res.json({message: "Admin logged in successfully"});
 });
 
-app.post('/admin/courses', (req, res) => {
-  // logic to create a course
+app.post('/admin/courses', adminAuth, (req, res) => {
+    let {title} = req.body;
+    const id = Date.now();
+
+    let course = {
+        id: id,
+        title: title
+    }
+
+    COURSES.push(course);
+    res.json({
+        message: "Course added successfully" });
+
 });
 
-app.put('/admin/courses/:courseId', (req, res) => {
-  // logic to edit a course
+app.put('/admin/courses/:courseId', adminAuth, (req, res) => {
+    let id = parseInt(req.params.courseId)
+    let course = COURSES.find(a => a.id === id)
+    let title = req.body.title;
+
+    if(!title) {
+        res.status(411).json({
+            message: "Incorrect parameters provided for updation"
+        }) 
+    }
+    if(course) {
+        course.title = req.body.title;
+        res.json({
+            message: "Course updated successfully"
+        })
+    } else {
+        res.status(401).json({
+            message: "Course with given id does not exist"
+        })
+    }
+   
 });
 
-app.get('/admin/courses', (req, res) => {
-  // logic to get all courses
+app.get('/admin/courses',adminAuth, (req, res) => {
+  res.json({
+    Courses: COURSES
+  })
 });
 
 // User routes
