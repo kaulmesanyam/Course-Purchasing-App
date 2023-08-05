@@ -47,16 +47,18 @@ app.post('/admin/login', adminAuth, (req, res) => {
 });
 
 app.post('/admin/courses', adminAuth, (req, res) => {
-    let {title} = req.body;
+    let {title, published} = req.body;
     const id = Date.now();
 
     let course = {
         id: id,
-        title: title
+        title: title,
+        published: published
     }
 
     COURSES.push(course);
     res.json({
+        couses: COURSES,
         message: "Course added successfully" });
 
 });
@@ -65,6 +67,7 @@ app.put('/admin/courses/:courseId', adminAuth, (req, res) => {
     let id = parseInt(req.params.courseId)
     let course = COURSES.find(a => a.id === id)
     let title = req.body.title;
+    let published = req.body.published;
 
     if(!title) {
         res.status(411).json({
@@ -73,7 +76,8 @@ app.put('/admin/courses/:courseId', adminAuth, (req, res) => {
     }
 
     if(course) {
-        course.title = req.body.title;
+        course.title = title;
+        course.published = published;
         res.json({
             message: "Course updated successfully"
         })
@@ -116,7 +120,11 @@ app.post('/users/login', userAuth, (req, res) => {
 });
 
 app.get('/users/courses', userAuth, (req, res) => {
-  
+    const publishedCourses = COURSES.filter((course) => course.published === true);
+
+    res.json({
+        courses: publishedCourses
+    })
 });
 
 app.post('/users/courses/:courseId', userAuth, (req, res) => {
