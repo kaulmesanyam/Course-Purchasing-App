@@ -18,6 +18,17 @@ const adminAuth = (req, res, next) => {
     }
 }
 
+const userAuth = (req, res, next) => {
+    const {username, password} = req.headers;
+    const userIsValid = USERS.find(a => (a.username === username && a.password === password));
+
+    if(userIsValid) {
+        next();
+    } else {
+        res.status(403).json({message: "User authentication failure"});
+    }
+}
+
 // Admin routes
 app.post('/admin/signup', (req, res) => {
     let adminBody = req.body;
@@ -59,7 +70,7 @@ app.put('/admin/courses/:courseId', adminAuth, (req, res) => {
             message: "Incorrect parameters provided for updation"
         }) 
     }
-    
+
     if(course) {
         course.title = req.body.title;
         res.json({
@@ -81,22 +92,33 @@ app.get('/admin/courses',adminAuth, (req, res) => {
 
 // User routes
 app.post('/users/signup', (req, res) => {
-  // logic to sign up user
+    let userBody = req.body;
+    const existingUser = USERS.find(a => a.username === userBody.username);
+    if(existingUser) {
+        res.status(403).json({message: "User already exists"});
+    } else {
+        USERS.push(userBody);
+        res.json({message: "User created successfully"});
+    }
 });
 
-app.post('/users/login', (req, res) => {
-  // logic to log in user
+app.post('/users/login', userAuth, (req, res) => {
+  res.json({
+    message: "User logged in successfully"
+  })
 });
 
-app.get('/users/courses', (req, res) => {
-  // logic to list all courses
+app.get('/users/courses', userAuth, (req, res) => {
+  res.json({
+    Users: COURSES
+  })
 });
 
-app.post('/users/courses/:courseId', (req, res) => {
+app.post('/users/courses/:courseId', userAuth, (req, res) => {
   // logic to purchase a course
 });
 
-app.get('/users/purchasedCourses', (req, res) => {
+app.get('/users/purchasedCourses', userAuth, (req, res) => {
   // logic to view purchased courses
 });
 
