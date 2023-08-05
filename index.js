@@ -59,6 +59,7 @@ app.put('/admin/courses/:courseId', adminAuth, (req, res) => {
             message: "Incorrect parameters provided for updation"
         }) 
     }
+    
     if(course) {
         course.title = req.body.title;
         res.json({
